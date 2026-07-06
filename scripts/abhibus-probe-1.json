@@ -1,0 +1,7 @@
+[
+  {
+    "url": "https://app.adjust.com/session",
+    "status": 400,
+    "body": "{\"app_token\":\"l7cakn00bv28\",\"timestamp\":\"2026-07-06T13:06:08.582Z+0000\",\"message\":\"Session failed (tracking disabled) (platform:web)\",\"error\":\"Session failed (tracking disabled) (platform:web)\"}"
+  }
+]

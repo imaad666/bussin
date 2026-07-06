@@ -1,0 +1,7 @@
+[
+  {
+    "url": "https://sso.abhibus.com/partner/register?client_id=8d2532fb-13e5-11ed-b582-0a5a0788a700",
+    "status": 200,
+    "body": "{\"user_at\":\"48193940-793b-11f1-ac1e-15a9ed979648\",\"issued_at\":\"66bfc36b-0cb5-3e3e-a518-6ca1beec82bf\"}"
+  }
+]
