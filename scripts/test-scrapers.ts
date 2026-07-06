@@ -1,60 +1,32 @@
-/**
- * End-to-end test of both scrapers.
- * Run: npx tsx scripts/test-scrapers.ts
- */
 import { scrapeRedBus } from "../lib/scraper/redbus";
 import { scrapeAbhiBus } from "../lib/scraper/abhibus";
 
+// Use a date that's definitely in the future
+const d = new Date();
+d.setDate(d.getDate() + 7);
+const DATE = d.toISOString().split("T")[0];
 const FROM = "blr";
 const TO = "hyd";
-const DATE = "2026-07-06";
 
 async function main() {
   console.log(`Testing scrapers: ${FROM} → ${TO} on ${DATE}\n`);
 
-  console.log("=== RedBus (direct API fetch) ===");
+  console.log("=== RedBus ===");
   const t1 = Date.now();
-  try {
-    const redbus = await scrapeRedBus(FROM, TO, DATE);
-    console.log(`Fetched ${redbus.length} listings in ${Date.now() - t1}ms`);
-    if (redbus.length) {
-      const s = redbus[0];
-      console.log("Sample:", {
-        operator: s.operator,
-        dep: s.departureTime,
-        arr: s.arrivalTime,
-        type: s.busType,
-        fare: s.baseFare,
-        seats: s.seatsAvailable,
-        rating: s.rating,
-      });
-    }
-  } catch(e) {
-    console.error("RedBus error:", (e as Error).message);
+  const redbus = await scrapeRedBus(FROM, TO, DATE);
+  console.log(`Fetched ${redbus.length} listings in ${Date.now() - t1}ms`);
+  if (redbus.length) {
+    console.log("Sample:", { operator: redbus[0].operator, dep: redbus[0].departureTime, fare: redbus[0].baseFare });
+    console.log("Last:", { operator: redbus[redbus.length-1].operator, fare: redbus[redbus.length-1].baseFare });
   }
 
-  console.log("\n=== AbhiBus (Playwright browser) ===");
+  console.log("\n=== AbhiBus ===");
   const t2 = Date.now();
-  try {
-    const abhibus = await scrapeAbhiBus(FROM, TO, DATE);
-    console.log(`Fetched ${abhibus.length} listings in ${Date.now() - t2}ms`);
-    if (abhibus.length) {
-      const s = abhibus[0];
-      console.log("Sample:", {
-        operator: s.operator,
-        dep: s.departureTime,
-        arr: s.arrivalTime,
-        type: s.busType,
-        fare: s.baseFare,
-        seats: s.seatsAvailable,
-        rating: s.rating,
-      });
-    }
-  } catch(e) {
-    console.error("AbhiBus error:", (e as Error).message);
+  const abhibus = await scrapeAbhiBus(FROM, TO, DATE);
+  console.log(`Fetched ${abhibus.length} listings in ${Date.now() - t2}ms`);
+  if (abhibus.length) {
+    console.log("Sample:", { operator: abhibus[0].operator, dep: abhibus[0].departureTime, fare: abhibus[0].baseFare });
   }
-
-  console.log("\nDone.");
 }
 
-main();
+main().catch(console.error);

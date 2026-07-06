@@ -58,7 +58,7 @@ export async function scrapeRedBus(
   let inventories: RedBusInventory[] = [];
 
   const browser = await chromium.launch({
-    headless: true,
+    headless: false,
     args: ["--disable-blink-features=AutomationControlled", "--no-sandbox"],
   });
 
@@ -74,23 +74,34 @@ export async function scrapeRedBus(
 
     const page = await context.newPage();
 
-    const inventoriesPromise = new Promise<RedBusInventory[]>((resolve) => {
-      const timeout = setTimeout(() => resolve([]), 20_000);
-      page.on("response", async (response) => {
+    // Step 1: capture the initial API URL from the page load
+    const firstApiUrlPromise = new Promise<string | null>((resolve) => {
+      const timeout = setTimeout(() => resolve(null), 20_000);
+      page.on("response", (response) => {
         if (response.url().includes("/rpw/api/searchResults")) {
-          try {
-            const json = await response.json();
-            clearTimeout(timeout);
-            resolve(json?.data?.inventories ?? []);
-          } catch {
-            resolve([]);
-          }
+          clearTimeout(timeout);
+          resolve(response.url());
         }
       });
     });
 
     await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 30_000 });
-    inventories = await inventoriesPromise;
+    const firstApiUrl = await firstApiUrlPromise;
+
+    if (firstApiUrl) {
+      // Step 2: re-fetch with limit=200 from inside the browser (carries cookies & headers)
+      const allUrl = firstApiUrl
+        .replace(/limit=\d+/, "limit=200")
+        .replace(/offset=\d+/, "offset=0")
+        .replace(/from=initialLoad/, "from=moreresults");
+
+      const result = await page.evaluate(async (url: string) => {
+        const resp = await fetch(url, { headers: { "Accept": "application/json" } });
+        return resp.ok ? resp.json() : null;
+      }, allUrl);
+
+      inventories = result?.data?.inventories ?? [];
+    }
   } catch (e) {
     console.error("[RedBus] scrape error:", e);
   } finally {
