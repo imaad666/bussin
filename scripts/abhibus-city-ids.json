@@ -1,0 +1,82 @@
+{
+  "bangalore": {
+    "id": 7,
+    "raw": {
+      "id": 7,
+      "label": "Bangalore",
+      "state_name": "Karnataka",
+      "state_code": "KA",
+      "pin_code": 560001
+    }
+  },
+  "hyderabad": {
+    "id": 3,
+    "raw": {
+      "id": 3,
+      "label": "Hyderabad",
+      "state_name": "Telangana",
+      "state_code": "TG",
+      "pin_code": 500001
+    }
+  },
+  "chennai": {
+    "id": 6,
+    "raw": {
+      "id": 6,
+      "label": "Chennai",
+      "state_name": "Tamil Nadu",
+      "state_code": "TN",
+      "pin_code": 600001
+    }
+  },
+  "mumbai": {
+    "id": 4,
+    "raw": {
+      "id": 4,
+      "label": "Mumbai",
+      "state_name": "Maharashtra",
+      "state_code": "MH",
+      "pin_code": 400001
+    }
+  },
+  "delhi": {
+    "id": 344,
+    "raw": {
+      "id": 344,
+      "label": "Delhi",
+      "state_name": "Delhi",
+      "state_code": "DL",
+      "pin_code": 110001
+    }
+  },
+  "pune": {
+    "id": 51,
+    "raw": {
+      "id": 51,
+      "label": "Pune",
+      "state_name": "Maharashtra",
+      "state_code": "MH",
+      "pin_code": 411002
+    }
+  },
+  "kochi": {
+    "id": 530,
+    "raw": {
+      "id": 530,
+      "label": "Kochi",
+      "state_name": "Kerala",
+      "state_code": "KL",
+      "pin_code": 682011
+    }
+  },
+  "goa": {
+    "id": 102,
+    "raw": {
+      "id": 102,
+      "label": "Goa",
+      "state_name": "Goa",
+      "state_code": "GA",
+      "pin_code": 403001
+    }
+  }
+}
