@@ -1,6 +1,8 @@
 import { getCity } from "./cities";
 import { matchListings } from "./matcher";
-import { fetchAbhiBusListings, fetchRedBusListings } from "./mock/adapters";
+import { getCached, setCached } from "./scraper/cache";
+import { scrapeAbhiBus } from "./scraper/abhibus";
+import { scrapeRedBus } from "./scraper/redbus";
 import type { SearchParams, SearchResult } from "./types";
 
 export async function searchTrips(params: SearchParams): Promise<SearchResult | null> {
@@ -11,9 +13,18 @@ export async function searchTrips(params: SearchParams): Promise<SearchResult | 
     return null;
   }
 
+  // Run both scrapers in parallel, each with their own cache
   const [redbus, abhibus] = await Promise.all([
-    fetchRedBusListings(from.id, to.id, params.date),
-    fetchAbhiBusListings(from.id, to.id, params.date),
+    getCached("redbus", from.id, to.id, params.date) ??
+      scrapeRedBus(from.id, to.id, params.date).then((r) => {
+        setCached("redbus", from.id, to.id, params.date, r);
+        return r;
+      }),
+    getCached("abhibus", from.id, to.id, params.date) ??
+      scrapeAbhiBus(from.id, to.id, params.date).then((r) => {
+        setCached("abhibus", from.id, to.id, params.date, r);
+        return r;
+      }),
   ]);
 
   const trips = matchListings([...redbus, ...abhibus]);
