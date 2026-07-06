@@ -1,11 +1,13 @@
 /**
- * RedBus scraper — uses their internal JSON API directly.
- * No browser needed: the API responds to plain fetch with a browser User-Agent.
- * API: GET /rpw/api/searchResults?fromCity={id}&toCity={id}&DOJ={DD-Mon-YYYY}&limit=50
+ * RedBus scraper — uses Playwright to load the search page and intercepts
+ * the /rpw/api/searchResults JSON endpoint.
+ * RedBus blocks plain fetch; the API only responds properly with a real browser session.
+ * URL: https://www.redbus.in/bus-tickets/{from}-to-{to}?onward={DD-Mon-YYYY}
  */
+import { chromium } from "playwright";
 import { enrichListing } from "../matcher";
 import type { RawListing } from "../types";
-import { REDBUS_CITY_IDS, REDBUS_CITY_SLUGS } from "./city-ids";
+import { REDBUS_CITY_SLUGS } from "./city-ids";
 
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
@@ -36,58 +38,66 @@ function toHHMM(datetime: string): string {
   return datetime.split(" ")[1]?.slice(0, 5) ?? datetime;
 }
 
-function bookingUrl(from: string, to: string, date: string): string {
-  const fromSlug = REDBUS_CITY_SLUGS[from] ?? from;
-  const toSlug = REDBUS_CITY_SLUGS[to] ?? to;
-  // RedBus onward date format: DD-Mon-YYYY
-  return `https://www.redbus.in/bus-tickets/${fromSlug}-to-${toSlug}?onward=${formatDateForRedBus(date)}`;
-}
-
 export async function scrapeRedBus(
   from: string,
   to: string,
   date: string
 ): Promise<RawListing[]> {
-  const fromId = REDBUS_CITY_IDS[from];
-  const toId = REDBUS_CITY_IDS[to];
+  const fromSlug = REDBUS_CITY_SLUGS[from];
+  const toSlug = REDBUS_CITY_SLUGS[to];
 
-  if (!fromId || !toId) {
-    console.warn(`[RedBus] No city ID for ${from} or ${to}`);
+  if (!fromSlug || !toSlug) {
+    console.warn(`[RedBus] No city slug for ${from} or ${to}`);
     return [];
   }
 
   const doj = formatDateForRedBus(date);
-  const url = `https://www.redbus.in/rpw/api/searchResults?fromCity=${fromId}&toCity=${toId}&DOJ=${doj}&limit=50&offset=0&meta=true&groupId=0&sectionId=0&sort=0&sortOrder=0&from=initialLoad&getUuid=true&bT=1`;
+  const searchUrl = `https://www.redbus.in/bus-tickets/${fromSlug}-to-${toSlug}?onward=${doj}`;
+  const bUrl = searchUrl;
 
-  let data: { inventories?: RedBusInventory[] } | null = null;
+  let inventories: RedBusInventory[] = [];
+
+  const browser = await chromium.launch({
+    headless: true,
+    args: ["--disable-blink-features=AutomationControlled", "--no-sandbox"],
+  });
 
   try {
-    const resp = await fetch(url, {
-      headers: {
-        "User-Agent": UA,
-        "Accept": "application/json",
-        "Referer": `https://www.redbus.in/bus-tickets/${REDBUS_CITY_SLUGS[from] ?? from}-to-${REDBUS_CITY_SLUGS[to] ?? to}`,
-      },
-      signal: AbortSignal.timeout(15_000),
+    const context = await browser.newContext({
+      userAgent: UA,
+      locale: "en-IN",
+      timezoneId: "Asia/Kolkata",
+    });
+    await context.addInitScript(() => {
+      Object.defineProperty(navigator, "webdriver", { get: () => undefined });
     });
 
-    if (!resp.ok) {
-      console.warn(`[RedBus] HTTP ${resp.status} for ${from}->${to}`);
-      return [];
-    }
+    const page = await context.newPage();
 
-    const json = await resp.json();
-    data = json?.data ?? null;
+    const inventoriesPromise = new Promise<RedBusInventory[]>((resolve) => {
+      const timeout = setTimeout(() => resolve([]), 20_000);
+      page.on("response", async (response) => {
+        if (response.url().includes("/rpw/api/searchResults")) {
+          try {
+            const json = await response.json();
+            clearTimeout(timeout);
+            resolve(json?.data?.inventories ?? []);
+          } catch {
+            resolve([]);
+          }
+        }
+      });
+    });
+
+    await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 30_000 });
+    inventories = await inventoriesPromise;
   } catch (e) {
-    console.error("[RedBus] fetch error:", e);
-    return [];
+    console.error("[RedBus] scrape error:", e);
+  } finally {
+    await browser.close();
   }
 
-  if (!data?.inventories?.length) return [];
-
-  const bUrl = bookingUrl(from, to, date);
-
-  return data.inventories
+  return inventories
     .filter((inv) => inv.availableSeats > 0 && inv.fareList?.length > 0)
     .map((inv, i) =>
       enrichListing({

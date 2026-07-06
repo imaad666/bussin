@@ -1,0 +1,32 @@
+[
+  {
+    "url": "https://ultron-api.redbus.com/api/v1/vitals",
+    "status": 202,
+    "bodyLen": 95,
+    "body": "{\"success\":true,\"data\":{\"received\":{\"metrics\":0,\"resources\":0,\"networkRequests\":0,\"errors\":0}}}"
+  },
+  {
+    "url": "https://www.redbus.in/rpw/api/searchResults?fromCity=122&toCity=124&DOJ=07-Jul-2026&limit=10&offset=0&meta=true&groupId=0&sectionId=0&sort=0&sortOrder=0&from=initialLoad&getUuid=true&bT=1&clearLMBFilter=undefined&isFilterApplied=false",
+    "status": 200,
+    "bodyLen": 25645,
+    "body": "{\"success\":true,\"data\":{\"metaData\":{\"totalCount\":267,\"sections\":[{\"groups\":[{\"count\":17,\"operatorId\":33000,\"displayName\":\"KSRTC Karnataka\",\"minFare\":1146,\"subHeader\":\"ಕರ್ನಾಟಕ ರಾಜ್ಯ ರಸ್ತೆ ಸಾರಿಗೆ ಸಂಸ್ಥೆ\",\"groupExpandType\":0},{\"count\":19,\"operatorId\":32245,\"displayName\":\"TGSRTC Buses\",\"minFare\":946,\"subHeader\":\"తెలంగాణ రాష్ట్ర రోడ్డు రవాణా సంస్థ\",\"concessionTags\":[4355],\"persuasionTags\":[555],\"groupExpandType\":0}],\"sectionId\":0,\"totalCount\":267,\"privateCount\":231,\"sectionInvCount\":231}],\"busLogoBas"
+  },
+  {
+    "url": "https://www.redbus.in/rpw/api/filters?fromCity=122&toCity=124&DOJ=07-Jul-2026&bT=1",
+    "status": 200,
+    "bodyLen": 185855,
+    "body": "{\"success\":true,\"data\":{\"filterTypeMeta\":{\"gridBoardingPoints\":{\"0\":{\"name\":\"Others\",\"id\":[22980952,29871564,29871563,28345276,26553220,27194760,29863387,28054926,29863396,26334649,24992594,24992591,29866483,28054936,26334633,29863422,28871042,28871044,26972070,29870983,29870981,29442435,29203966,29870979,29870977,27300842,29870985,27806202,29449111,29187051,29449110,29449113,26166743,29449112,29449114,29117410,27571707,29871013,23056188,29442471,29432234,24433947,29871543,29871542,29871541,2987"
+  },
+  {
+    "url": "https://www.redbus.in/rpw/api/mri/dfd",
+    "status": 200,
+    "bodyLen": 111,
+    "body": "{\"success\":true,\"statusCode\":200,\"data\":{\"message\":\"OK\",\"error\":false,\"code\":200,\"results\":{\"push\":\"success\"}}}"
+  },
+  {
+    "url": "https://www.redbus.in/rpw/api/mri/ux",
+    "status": 200,
+    "bodyLen": 111,
+    "body": "{\"success\":true,\"statusCode\":200,\"data\":{\"message\":\"OK\",\"error\":false,\"code\":200,\"results\":{\"push\":\"success\"}}}"
+  }
+]
